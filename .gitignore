@@ -1,0 +1,26 @@
+# Python caches / bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Generated data (regenerable via data/generate_events.py)
+data/events.jsonl
+
+# Generated pipeline / report artifacts (regenerable — see README)
+reports/audit.jsonl
+reports/report.md
+reports/report.json
+reports/dashboard.html
+
+# OS / editor cruft
+.DS_Store
+*.swp
+.idea/
+.vscode/

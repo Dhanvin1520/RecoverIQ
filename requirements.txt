@@ -1,0 +1,14 @@
+# Core project: NO third-party dependencies — standard library only
+# (Python 3.10+). It runs anywhere with no install step and the live demo can
+# never break on a package/network issue.
+#
+# OPTIONAL — only for the LLM-assisted diagnoser path (`--diagnoser llm`).
+# The default rules-only path does not need this. If it's absent or no
+# credentials are configured, the LLM diagnoser transparently falls back to
+# rules, so nothing breaks.
+#   anthropic>=0.40
+#
+# OPTIONAL — only for the live Razorpay test-mode executor (`--executor razorpay`).
+# Needs RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET (test keys) in the environment.
+# The default simulated executor needs neither.
+#   razorpay>=1.4
