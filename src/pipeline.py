@@ -134,7 +134,7 @@ def main() -> None:
     ap.add_argument("--audit", default=DEFAULT_AUDIT)
     ap.add_argument("--diagnoser", choices=["rules", "llm"], default="rules",
                     help="rules = deterministic/offline (default); "
-                         "llm = Claude-assisted, auto-falls back to rules")
+                         "llm = LLM-assisted, auto-falls back to rules")
     ap.add_argument("--executor", choices=["simulated", "razorpay"],
                     default="simulated",
                     help="simulated = offline honest-scoring default; "
