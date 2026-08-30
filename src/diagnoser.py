@@ -108,26 +108,34 @@ _LLM_SYSTEM_PROMPT = (
 )
 
 class LLMDiagnoser(Diagnoser):
-    """LLM-assisted classifier (Anthropic Claude) behind the same interface.
+    """LLM-assisted root-cause classifier behind the swappable Diagnoser interface.
 
     This proves the interface is genuinely swappable — the pipeline, policy,
     executor, and audit log are untouched. It is NOT the default: the rule-based
     diagnoser stays the runtime default so the live demo can't break on an API
-    issue. This path is safe by construction — if the `anthropic` SDK isn't
-    installed, no credentials are configured, or any call/parse fails, it falls
-    back to the deterministic RuleBasedDiagnoser for that transaction.
+    issue. This path is safe by construction — if no LLM credentials are
+    configured or any call fails, it automatically falls back to the deterministic
+    RuleBasedDiagnoser for that transaction.
     """
 
     def __init__(self, model: str | None = None):
         import os
-        self.model = model or os.environ.get("ANTHROPIC_MODEL", "claude-opus-5")
+        self.model = model or os.environ.get("LLM_MODEL", "gpt-4o-mini")
         self._fallback = RuleBasedDiagnoser()
         self._client = None
+        # Support Anthropic or OpenAI if present
         try:
             import anthropic
             self._client = anthropic.Anthropic()
+            self._provider = "anthropic"
         except Exception:
-            self._client = None
+            try:
+                import openai
+                self._client = openai.OpenAI()
+                self._provider = "openai"
+            except Exception:
+                self._client = None
+                self._provider = None
 
     def diagnose(self, event_view: dict) -> Diagnosis:
         txn_id = event_view.get("transaction_id", "")
@@ -141,14 +149,24 @@ class LLMDiagnoser(Diagnoser):
             payload = {k: event_view.get(k) for k in
                        ("transaction_id", "payment_method", "amount",
                         "currency", "status", "failure_reason", "retry_count")}
-            resp = self._client.messages.create(
-                model=self.model,
-                max_tokens=512,
-                output_config={"effort": "low"},
-                system=_LLM_SYSTEM_PROMPT,
-                messages=[{"role": "user", "content": json.dumps(payload)}],
-            )
-            text = "".join(b.text for b in resp.content if b.type == "text")
+            if self._provider == "anthropic":
+                resp = self._client.messages.create(
+                    model=self.model if "claude" in self.model else "claude-3-5-sonnet-20241022",
+                    max_tokens=512,
+                    system=_LLM_SYSTEM_PROMPT,
+                    messages=[{"role": "user", "content": json.dumps(payload)}],
+                )
+                text = "".join(b.text for b in resp.content if b.type == "text")
+            else:
+                resp = self._client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "system", "content": _LLM_SYSTEM_PROMPT},
+                        {"role": "user", "content": json.dumps(payload)}
+                    ],
+                )
+                text = resp.choices[0].message.content or ""
+
             data = json.loads(text[text.index("{"): text.rindex("}") + 1])
             category = data.get("root_cause_category")
             if category not in _VALID_CATEGORIES:
@@ -157,7 +175,7 @@ class LLMDiagnoser(Diagnoser):
                 transaction_id=txn_id,
                 root_cause_category=category,
                 confidence=float(data.get("confidence", 0.5)),
-                reasoning="[LLM] " + str(data.get("reasoning", ""))[:200],
+                reasoning="[AI] " + str(data.get("reasoning", ""))[:200],
             )
         except Exception as exc:
             return self._degrade(event_view, f"LLM error ({type(exc).__name__})")
@@ -175,7 +193,7 @@ def get_diagnoser(mode: str = "rules") -> Diagnoser:
     """Select a diagnoser strategy by name. Default stays deterministic.
 
     mode="rules" -> RuleBasedDiagnoser (default, offline, demo-safe)
-    mode="llm"   -> LLMDiagnoser (Claude-assisted, auto-falls back to rules)
+    mode="llm"   -> LLMDiagnoser (AI-assisted, auto-falls back to rules)
     """
     if mode == "llm":
         return LLMDiagnoser()
