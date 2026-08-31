@@ -37,7 +37,7 @@ def render(m: dict) -> str:
     nothing = sc.get("do_nothing", {})
     narr = m.get("narrative", {})
     mode = m.get("diagnoser_mode", "rules")
-    ai_badge = ("Claude LLM" if mode == "llm" else "Rule-based")
+    ai_badge = ("LLM Engine" if mode == "llm" else "Rule-based")
 
     kpis = [
         ("Value at risk", _money(m["total_at_risk"]), f"{m['at_risk_transactions']} txns"),
@@ -113,7 +113,7 @@ def render(m: dict) -> str:
     more_note = (f'<p class="muted">+ {more} more in reports/report.md</p>'
                  if more > 0 else "")
 
-    narr_src = ("Claude (LLM)" if narr.get("source") == "llm" else "auto")
+    narr_src = ("LLM" if narr.get("source") == "llm" else "auto")
 
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
