@@ -220,14 +220,14 @@ def render_markdown(m: dict) -> str:
 
     narr = m.get("narrative", {})
     if narr.get("text"):
-        src = "AI-generated (Claude)" if narr.get("source") == "llm" \
+        src = "AI-generated (LLM)" if narr.get("source") == "llm" \
             else "auto-generated"
         lines.append(f"## Executive summary ({src})\n")
         lines.append(f"> {narr['text']}\n")
 
     lines.append(f"**Diagnoser used this run:** `{m.get('diagnoser_mode', 'rules')}` "
                  f"(rule-based default; run with `--diagnoser llm` for "
-                 f"Claude-assisted classification).\n")
+                 f"LLM-assisted classification).\n")
 
     lines.append("## Headline\n")
     lines.append(f"- **Batch size:** {m['batch_size']} transactions")
