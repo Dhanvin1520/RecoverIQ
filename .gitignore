@@ -19,6 +19,15 @@ reports/report.md
 reports/report.json
 reports/dashboard.html
 
+# Node / frontend build artifacts (dashboard)
+node_modules/
+dashboard/dist/
+dashboard/node_modules/
+
+# Secrets / local env
+.env
+.env.*
+
 # OS / editor cruft
 .DS_Store
 *.swp
