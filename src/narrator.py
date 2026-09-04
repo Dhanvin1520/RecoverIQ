@@ -1,10 +1,9 @@
 """Plain-English narrative of a batch result.
 
-Turns the computed metrics into a short executive summary. Uses Claude when the
-`anthropic` SDK and credentials are available; otherwise falls back to a
-deterministic template so a run never depends on the network. Either way the
-numbers come from the real metrics dict — the model only phrases them, it does
-not invent figures.
+Turns the computed metrics into a short executive summary. Uses an LLM when
+available; otherwise falls back to a deterministic template so a run never
+depends on the network. Either way the numbers come from the real metrics dict —
+the model only phrases them, it does not invent figures.
 """
 from __future__ import annotations
 
