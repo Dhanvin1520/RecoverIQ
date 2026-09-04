@@ -35,12 +35,19 @@ class RecoveryAdapter(abc.ABC):
     """Interface for the system that actually performs a recovery action."""
 
     @abc.abstractmethod
-    def execute(self, decision: ActionDecision, amount: float) -> RecoveryOutcome:
+    def execute(self, decision: ActionDecision, amount: float,
+                attempt: int = 0) -> RecoveryOutcome:
         ...
 
-def _deterministic_unit(txn_id: str) -> float:
-    """Stable pseudo-random value in [0,1) derived from the txn id (no RNG state)."""
-    h = hashlib.sha256(txn_id.encode()).hexdigest()
+def _deterministic_unit(txn_id: str, attempt: int = 0) -> float:
+    """Stable pseudo-random value in [0,1) per (txn id, attempt).
+
+    Salting by attempt models each retry as an INDEPENDENT chance — a bank
+    timeout retried a second time genuinely has a fresh shot — which is more
+    realistic than reusing one outcome across attempts, and keeps this executor
+    consistent with the ground-truth-aware world model in `strategies.py`.
+    """
+    h = hashlib.sha256(f"{txn_id}#a{attempt}".encode()).hexdigest()
     return (int(h[:8], 16) % 10_000) / 10_000.0
 
 from src.economics import SUCCESS_PROB as _SUCCESS_PROB
@@ -48,7 +55,8 @@ from src.economics import SUCCESS_PROB as _SUCCESS_PROB
 class SimulatedAdapter(RecoveryAdapter):
     """Deterministic, offline stand-in for real payment-recovery calls."""
 
-    def execute(self, decision: ActionDecision, amount: float) -> RecoveryOutcome:
+    def execute(self, decision: ActionDecision, amount: float,
+                attempt: int = 0) -> RecoveryOutcome:
         action = decision.action
         txn_id = decision.transaction_id
 
@@ -59,11 +67,10 @@ class SimulatedAdapter(RecoveryAdapter):
             return RecoveryOutcome(txn_id, action, RESULT_STILL_FAILED, 0.0)
 
         if action == ACTION_NOTIFY_CUSTOMER:
-
             return RecoveryOutcome(txn_id, action, RESULT_STILL_FAILED, 0.0)
 
         prob = _SUCCESS_PROB.get(action, 0.0)
-        roll = _deterministic_unit(txn_id)
+        roll = _deterministic_unit(txn_id, attempt)
         if roll < prob:
             return RecoveryOutcome(txn_id, action, RESULT_RECOVERED, round(amount, 2))
         return RecoveryOutcome(txn_id, action, RESULT_STILL_FAILED, 0.0)
@@ -98,7 +105,8 @@ class RazorpayTestModeAdapter(RecoveryAdapter):
                                "(rzp_test_...), never live keys.")
         self._client = razorpay.Client(auth=(key_id, key_secret))
 
-    def execute(self, decision: ActionDecision, amount: float) -> RecoveryOutcome:
+    def execute(self, decision: ActionDecision, amount: float,
+                attempt: int = 0) -> RecoveryOutcome:
         action = decision.action
         txn_id = decision.transaction_id
         if action in (ACTION_ESCALATE_HUMAN,):
@@ -126,8 +134,9 @@ class RecoveryExecutor:
     def __init__(self, adapter: RecoveryAdapter | None = None):
         self.adapter = adapter or SimulatedAdapter()
 
-    def run(self, decision: ActionDecision, amount: float) -> RecoveryOutcome:
-        return self.adapter.execute(decision, amount)
+    def run(self, decision: ActionDecision, amount: float,
+            attempt: int = 0) -> RecoveryOutcome:
+        return self.adapter.execute(decision, amount, attempt)
 
 def get_default_executor() -> RecoveryExecutor:
     return RecoveryExecutor(SimulatedAdapter())

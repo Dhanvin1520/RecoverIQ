@@ -82,7 +82,7 @@ def process_event(event: PaymentEvent, diagnoser, executor, audit: AuditLog) -> 
     while True:
         attempt += 1
         decision = decide(diagnosis, retry_count, event.amount)
-        outcome = executor.run(decision, event.amount)
+        outcome = executor.run(decision, event.amount, attempt)
 
         audit.write(AuditRecord(
             transaction_id=event.transaction_id,
@@ -103,7 +103,7 @@ def process_event(event: PaymentEvent, diagnoser, executor, audit: AuditLog) -> 
         if retry_count > MAX_RETRIES:
 
             final = decide(diagnosis, retry_count, event.amount)
-            final_outcome = executor.run(final, event.amount)
+            final_outcome = executor.run(final, event.amount, attempt + 1)
             audit.write(AuditRecord(
                 transaction_id=event.transaction_id,
                 timestamp=_now_iso(),
