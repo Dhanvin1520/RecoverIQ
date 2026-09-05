@@ -158,10 +158,10 @@ export default function App() {
           </div>
           <div className="brand-titles">
             <h1>
-              AI Revenue Recovery Agent
+              RecoverIQ
               <span className="badge badge-outline">Track 3</span>
             </h1>
-            <p>Payment Degradation → Root Cause → Recovery Action</p>
+            <p>A Compliant AI Revenue Recovery Agent · Degradation → Root Cause → Bounded Action</p>
           </div>
         </div>
 

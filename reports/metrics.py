@@ -213,7 +213,7 @@ def _fmt_money(x: float) -> str:
 
 def render_markdown(m: dict) -> str:
     lines = []
-    lines.append("# Revenue Recovery — Batch Report\n")
+    lines.append("# RecoverIQ — A Compliant AI Revenue Recovery Agent Report\n")
     lines.append("_All numbers below are computed from an actual pipeline run "
                  "(reports/audit.jsonl) scored against hidden ground-truth labels. "
                  "Nothing here is hardcoded._\n")

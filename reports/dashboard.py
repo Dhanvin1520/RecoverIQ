@@ -117,7 +117,7 @@ def render(m: dict) -> str:
 
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Revenue Recovery — Dashboard</title>
+<title>RecoverIQ — A Compliant AI Revenue Recovery Agent</title>
 <style>
 :root {{ --bg:#0d1117; --card:#161b22; --line:#232a34; --txt:#e6edf3;
         --muted:#8b949e; --good:#2ea043; --bad:#f85149; --accent:#4f9dff; }}
@@ -161,7 +161,7 @@ td.num {{ text-align:right; font-variant-numeric:tabular-nums; }}
 @media(max-width:760px){{ .grid{{grid-template-columns:repeat(2,1fr);}}
   .row{{grid-template-columns:1fr;}} }}
 </style></head><body><div class="wrap">
-<h1>AI Revenue Recovery — Batch Dashboard</h1>
+<h1>RecoverIQ — A Compliant AI Revenue Recovery Agent</h1>
 <p class="sub">Payment degradation → root cause → recovery action.
 Every figure computed from a live run, scored against hidden ground truth.</p>
 <p><span class="badge">Diagnoser: {_esc(ai_badge)}</span></p>

@@ -1,4 +1,4 @@
-# AI Revenue Recovery Agent
+# RecoverIQ — A Compliant AI Revenue Recovery Agent
 
 **Payment Degradation → Root Cause → Recovery Action.** An autonomous agent that
 takes a batch of failed and degraded payments, diagnoses *why* each one failed,

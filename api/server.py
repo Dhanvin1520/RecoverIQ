@@ -38,8 +38,8 @@ DEFAULT_EVENTS = os.path.join(_REPO_ROOT, "data", "events.jsonl")
 DEFAULT_AUDIT = os.path.join(_REPO_ROOT, "reports", "audit.jsonl")
 DEFAULT_REPORT_JSON = os.path.join(_REPO_ROOT, "reports", "report.json")
 
-app = FastAPI(title="AI Revenue Recovery Agent API",
-              description="API for the AI Revenue Recovery Agent dashboard")
+app = FastAPI(title="RecoverIQ API",
+              description="API for RecoverIQ — A Compliant AI Revenue Recovery Agent")
 
 app.add_middleware(
     CORSMiddleware,
